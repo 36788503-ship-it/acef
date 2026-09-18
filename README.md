@@ -79,7 +79,10 @@ py -m jsonschema --instance examples/edu-agent/authorization-profile.json spec/a
 | 0.3 | 事件流锚定（anchor）与增量报告；多智能体派生（子 agent 继承声明） |
 | 1.0 | 提交 OWASP GenAI 项目 / W3C CG 讨论，冻结 6 个月后发布 |
 
-## 7. 许可与贡献
+## 7. 许可、版权与商标
 
-Apache-2.0（允许商业闭源衍生，利于扩散）。贡献者协议后续补 CLA。
-命名 ACEF 为占位名，公开前需做一次商标/撞名检索。
+- **版权**：Copyright (c) 2026 The ACEF Authors。代码与文档按 **Apache-2.0** 授权（允许商业与闭源衍生，附 NOTICE 与 MARKS.md 约束）
+- **贡献**：见 [CONTRIBUTING.md](CONTRIBUTING.md)——入站=出站（Apache-2.0）+ DCO 签署
+- **商标**："ACEF" 名称受 [MARKS.md](MARKS.md) 使用政策约束（项目拟注册商标）。代码开放 ≠ 名称开放
+
+<!-- SPDX-License-Identifier: Apache-2.0 -->

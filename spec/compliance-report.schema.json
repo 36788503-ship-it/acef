@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:acef:spec:0.1:compliance-report",
+  "$comment": "SPDX-License-Identifier: Apache-2.0 | Copyright (c) 2026 The ACEF Authors | See NOTICE and MARKS.md",
   "title": "ACEF Compliance Report",
   "description": "履约报告：授权声明 × 行为事件 × 法规条款的三方比对产物，双语摘要供非技术决策者审阅。对应《实施意见》§11 合规自测、§12 认证结果互通互认；EU AI Act Art 11/13/72 的证据形态。",
   "type": "object",

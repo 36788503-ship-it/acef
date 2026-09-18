@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:acef:spec:0.1:behavior-event",
+  "$comment": "SPDX-License-Identifier: Apache-2.0 | Copyright (c) 2026 The ACEF Authors | See NOTICE and MARKS.md",
   "title": "ACEF Behavior Event",
   "description": "行为事件：智能体每次动作尝试的不可抵赖记录。JSONL，一行一事件。对应《实施意见》§7「可验证、可追溯」。",
   "type": "object",

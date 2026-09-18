@@ -1,0 +1,13 @@
+ACEF — Agent Compliance Evidence Format
+Copyright (c) 2026 The ACEF Authors
+
+This project is licensed under the Apache License, Version 2.0.
+
+This product includes the ACEF specification, JSON Schemas, examples
+and documentation developed at:
+https://github.com/36788503-ship-it/acef
+
+Trademark notice: "ACEF" and "Agent Compliance Evidence Format" are
+project marks. Usage is subject to MARKS.md; the project intends to
+register the mark. "ACEF Certified" is reserved for a future official
+certification program.
