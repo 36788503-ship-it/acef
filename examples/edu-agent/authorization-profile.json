@@ -1,0 +1,80 @@
+{
+  "acef_version": "0.1",
+  "profile_id": "ap_edupilot_2.3.1_20260901",
+  "title": { "zh-CN": "EduPilot 教学助手（课件生成与作业批改）授权声明", "en": "EduPilot Teaching Assistant — Authorization Profile" },
+  "issued_at": "2026-09-01T08:00:00+08:00",
+  "expires_at": "2026-12-01T08:00:00+08:00",
+  "subject": {
+    "agent": {
+      "name": "EduPilot",
+      "version": "2.3.1",
+      "developer": "示例教育科技（_placeholder_org）",
+      "deployer": "XX市第一中学",
+      "registry_id": "AGT-CN-2026-00000000"
+    },
+    "accountable_human": {
+      "name": "（占位）校方信息中心主任",
+      "role": "deployer-representative",
+      "contact": "it@example-school.cn"
+    }
+  },
+  "authorization": {
+    "decision_model": ["user-authorized", "agent-autonomous"],
+    "capabilities": [
+      {
+        "domain": "model-access",
+        "grant": "execute",
+        "scope": { "providers": ["api.llm-provider.example"] },
+        "constraints": ["when context.source == \"teacher\" && action == \"llm.chat\""],
+        "expression_lang": "cedar",
+        "decision_class": "agent-autonomous",
+        "note": { "zh-CN": "仅允许调用已备案的大模型接口生成教学内容。", "en": "LLM calls for teaching content only." }
+      },
+      {
+        "domain": "network",
+        "grant": "execute",
+        "scope": { "hosts": ["api.llm-provider.example", "admin.example-school.cn"] },
+        "expression_lang": "cedar",
+        "decision_class": "agent-autonomous"
+      },
+      {
+        "domain": "filesystem",
+        "grant": "write",
+        "scope": { "paths": ["%USERPROFILE%/Documents/EduPilot导出/**", "%TEMP%/edupilot/**"] },
+        "constraints": ["fs.write is allowed only under scope.paths"],
+        "expression_lang": "cedar",
+        "decision_class": "user-authorized",
+        "note": { "zh-CN": "导出文件仅落盘到教师指定的导出目录。", "en": "Exports only to the designated folder." }
+      },
+      {
+        "domain": "tool-use",
+        "grant": "execute",
+        "scope": { "tools": ["docx.export", "katex2omml.convert"] },
+        "decision_class": "agent-autonomous"
+      },
+      {
+        "domain": "data-collection",
+        "grant": "read",
+        "scope": { "categories": ["student-record"], "via": "school-admin-api" },
+        "decision_class": "user-authorized",
+        "requires_user_approval": true,
+        "note": { "zh-CN": "读取学生名单用于批改，需教师确认后一次性拉取。", "en": "Roster fetch requires teacher confirmation." }
+      },
+      {
+        "domain": "payment",
+        "grant": "none",
+        "decision_class": "user-exclusive",
+        "note": { "zh-CN": "智能体无任何支付能力——负面清单明示禁止。", "en": "No payment capability, explicitly denied." }
+      }
+    ],
+    "data_flow": [
+      { "category": "telemetry", "direction": "outbound", "counterparty": "admin.example-school.cn", "lawful_basis": "合同履行（教学服务统计）" },
+      { "category": "student-record", "direction": "inbound", "counterparty": "school-admin-api", "lawful_basis": "履行法定职责所必需（教学管理）" }
+    ],
+    "autonomy_limits": { "max_actions_per_run": 500, "max_duration_minutes": 30 }
+  },
+  "policy_source": [
+    { "engine": "cedar", "uri": "policies/edupilot.cedar", "digest": "sha256:9f1c0a7d2b3e4f5a6789012345678901234567890abcdef1234567890abcdef12" }
+  ],
+  "signature": { "algorithm": "none" }
+}

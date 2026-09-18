@@ -1,0 +1,8 @@
+# 内部策略文件，不入公开仓库（本地保留）
+NEXT-STEPS-柯工.md
+
+# 杂物
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:acef:spec:0.1:compliance-report",
+  "title": "ACEF Compliance Report",
+  "description": "履约报告：授权声明 × 行为事件 × 法规条款的三方比对产物，双语摘要供非技术决策者审阅。对应《实施意见》§11 合规自测、§12 认证结果互通互认；EU AI Act Art 11/13/72 的证据形态。",
+  "type": "object",
+  "required": ["acef_version", "report_id", "generated_at", "period", "profile_ref", "summary", "conformance", "regulatory_mapping", "verifier"],
+  "properties": {
+    "acef_version": { "const": "0.1" },
+    "report_id": { "type": "string", "pattern": "^rpt_[a-zA-Z0-9_-]{4,64}$" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "period": {
+      "type": "object",
+      "required": ["from", "to"],
+      "properties": {
+        "from": { "type": "string", "format": "date-time" },
+        "to": { "type": "string", "format": "date-time" }
+      }
+    },
+    "profile_ref": {
+      "type": "object",
+      "required": ["profile_id", "profile_digest"],
+      "properties": {
+        "profile_id": { "type": "string" },
+        "profile_digest": { "type": "string" }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["zh-CN", "en"],
+      "description": "受约束自然语言摘要：MUST 覆盖 ①监测期内动作总量 ②拦截/升级次数 ③违规结论 ④数据出境/外发情况。这是非技术者的'签字页'。",
+      "properties": {
+        "zh-CN": { "type": "string", "minLength": 20 },
+        "en": { "type": "string", "minLength": 20 }
+      }
+    },
+    "conformance": {
+      "type": "object",
+      "required": ["event_counts", "violations"],
+      "properties": {
+        "event_counts": {
+          "type": "object",
+          "required": ["total", "allowed", "blocked", "escalated", "violations"],
+          "properties": {
+            "total": { "type": "integer", "minimum": 0 },
+            "allowed": { "type": "integer", "minimum": 0 },
+            "blocked": { "type": "integer", "minimum": 0 },
+            "escalated": { "type": "integer", "minimum": 0 },
+            "violations": { "type": "integer", "minimum": 0 },
+            "integrity_verified": { "type": "boolean", "description": "事件流哈希链是否校验通过。false 时本报告整体降级为'不可信证据'，MUST 在 summary 声明。" }
+          }
+        },
+        "violations": {
+          "type": "array",
+          "description": "违规=声明外行为被实际执行（allowed 但不该 allowed），或 required-approval 未升级即执行。blocked 不算违规，算围栏生效。",
+          "items": {
+            "type": "object",
+            "required": ["event_refs", "kind", "severity", "description"],
+            "properties": {
+              "event_refs": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+              "kind": {
+                "enum": ["undeclared-action-executed", "out-of-scope-executed", "approval-bypassed", "data-flow-undeclared", "autonomy-limit-exceeded"]
+              },
+              "severity": { "enum": ["warning", "critical"] },
+              "description": {
+                "type": "object",
+                "required": ["zh-CN"],
+                "properties": { "zh-CN": { "type": "string" }, "en": { "type": "string" } }
+              },
+              "resolution": { "type": "string", "description": "处置：修复版本/下线/豁免依据。MAY。" }
+            }
+          }
+        },
+        "fence_effectiveness": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "围栏有效率 = blocked / (blocked + violations)。MAY，给买主的直观指标。"
+        }
+      }
+    },
+    "regulatory_mapping": {
+      "type": "array",
+      "minItems": 1,
+      "description": "逐条款符合性结论。每条 MUST 挂证据引用，供认证机构抽查（互通互认的机器基础）。",
+      "items": {
+        "type": "object",
+        "required": ["regulation", "provision", "status"],
+        "properties": {
+          "regulation": {
+            "enum": ["CN-Agent-Opinion-2026", "EU-AI-Act-2024", "NIST-AI-RMF-1.0", "ISO-IEC-42001"]
+          },
+          "provision": {
+            "type": "string",
+            "description": "条款号。如 CN-Agent-Opinion-2026 的 '§6'；EU-AI-Act-2024 的 'Art.72'。"
+          },
+          "status": { "enum": ["conformant", "partial", "non-conformant", "not-applicable"] },
+          "statement": {
+            "type": "object",
+            "properties": { "zh-CN": { "type": "string" }, "en": { "type": "string" } }
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "event_id / profile 字段路径 / violations 索引。"
+          }
+        }
+      }
+    },
+    "verifier": {
+      "type": "object",
+      "required": ["tool", "version"],
+      "description": "谁生成的报告。第三方工具 + 签名 = 0.2 起对接认证机构流水线。",
+      "properties": {
+        "tool": { "type": "string" },
+        "version": { "type": "string" },
+        "signature": {
+          "type": "object",
+          "properties": {
+            "algorithm": { "enum": ["none", "ed25519", "ecdsa-p256", "sigstore-bundle"] },
+            "signed_digest": { "type": "string" },
+            "public_key": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

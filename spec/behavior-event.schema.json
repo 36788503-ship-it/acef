@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:acef:spec:0.1:behavior-event",
+  "title": "ACEF Behavior Event",
+  "description": "行为事件：智能体每次动作尝试的不可抵赖记录。JSONL，一行一事件。对应《实施意见》§7「可验证、可追溯」。",
+  "type": "object",
+  "required": ["acef_version", "event_id", "timestamp", "profile_ref", "run_id", "action", "outcome"],
+  "properties": {
+    "acef_version": { "const": "0.1" },
+    "event_id": { "type": "string", "pattern": "^evt_[a-zA-Z0-9_-]{4,64}$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "profile_ref": {
+      "type": "object",
+      "required": ["profile_id"],
+      "description": "引用的授权声明。event 与 profile 解耦：profile 换版后旧事件仍可审计。",
+      "properties": {
+        "profile_id": { "type": "string" },
+        "profile_digest": { "type": "string", "description": "sha256:...，防声明事后被改。" }
+      }
+    },
+    "run_id": { "type": "string", "description": "一次任务执行/会话的标识。" },
+    "actor": {
+      "type": "object",
+      "description": "MAY。多智能体场景：实际发起的子 agent；缺省为主体自身。",
+      "properties": {
+        "agent_name": { "type": "string" },
+        "parent_run_id": { "type": "string" },
+        "trigger": { "enum": ["user", "schedule", "agent", "system"], "description": "触发源。agent 触发的链式行为是审计重点。" }
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": ["domain", "operation"],
+      "properties": {
+        "domain": {
+          "enum": [
+            "network", "filesystem", "process", "shell", "code-execution",
+            "model-access", "tool-use", "data-collection", "payment",
+            "communication", "identity", "physical-actuator"
+          ],
+          "description": "MUST 与 authorization-profile 的 capabilityDomain 枚举一致。"
+        },
+        "operation": { "type": "string", "description": "操作名，如 fs.write、http.post、tool.invoke、llm.chat。" },
+        "target": { "type": "string", "description": "对象标识：路径/host/工具名/收款方等。" },
+        "params_digest": { "type": "string", "description": "参数摘要 sha256:...。原始参数默认不落盘（数据最小化），需要时可外存并引用。" }
+      }
+    },
+    "outcome": {
+      "enum": ["allowed", "blocked", "escalated-to-user", "user-approved", "user-denied", "failed"],
+      "description": "allowed=放行；blocked=执法层拦截（这是'行为围栏'生效的证据）；escalated-to-user=按声明升级；failed=技术失败（不算合规事件但保留）。"
+    },
+    "policy_match": {
+      "type": "object",
+      "description": "命中了声明的哪条能力/约束。blocked 事件 MUST 提供被拒原因。",
+      "properties": {
+        "capability_domain": { "type": "string" },
+        "rule": { "type": "string", "description": "命中的 Cedar/CEL/AgentSpec 规则原文或 ID。" },
+        "reason_code": {
+          "enum": ["not-declared", "out-of-scope", "constraint-violated", "approval-required", "autonomy-limit-exceeded", "deny-rule"],
+          "description": "not-declared=声明里根本没有此能力；out-of-scope=有能力但目标超范围（如越目录、越域名）。"
+        }
+      }
+    },
+    "data_touched": {
+      "type": "object",
+      "description": "MAY。本次动作涉及的数据类别与流向，用于与 profile.data_flow 对账。",
+      "properties": {
+        "categories": {
+          "type": "array",
+          "items": { "enum": ["personal", "student-record", "teaching-content", "payment", "telemetry", "credential", "other"] }
+        },
+        "egress_destination": { "type": "string" }
+      }
+    },
+    "severity": { "enum": ["info", "notice", "warning", "critical"], "default": "info" },
+    "integrity": {
+      "type": "object",
+      "description": "哈希链。this_hash = sha256(canonical_json(event 去掉 integrity 字段) + prev_hash)。首个事件 prev_hash = sha256(\"\")。外部锚定见 anchor。",
+      "properties": {
+        "prev_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "this_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "anchor": {
+      "type": "object",
+      "description": "MAY。外部锚定（区块链存证/时间戳 RFC 3161/Sigstore tlog），对应《实施意见》§7 区块链可验证可追溯的落点。",
+      "properties": {
+        "kind": { "enum": ["rfc3161-tsa", "blockchain", "transparency-log"] },
+        "uri": { "type": "string" },
+        "anchored_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

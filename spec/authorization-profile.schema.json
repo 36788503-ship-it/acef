@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:acef:spec:0.1:authorization-profile",
+  "title": "ACEF Authorization Profile",
+  "description": "授权声明：智能体被允许做什么。部署前声明并签署，运行期不得超出。对应中国《智能体实施意见》§6「智能体执行操作不得超出用户授权范围」。",
+  "type": "object",
+  "required": ["acef_version", "profile_id", "issued_at", "subject", "authorization"],
+  "properties": {
+    "acef_version": { "const": "0.1" },
+    "profile_id": {
+      "type": "string",
+      "description": "全局唯一声明标识，事件流与报告通过它引用本声明。",
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]{7,127}$"
+    },
+    "title": {
+      "type": "object",
+      "description": "人可读名称（双语）。",
+      "properties": {
+        "zh-CN": { "type": "string" },
+        "en": { "type": "string" }
+      }
+    },
+    "issued_at": { "type": "string", "format": "date-time" },
+    "expires_at": { "type": "string", "format": "date-time" },
+    "subject": {
+      "type": "object",
+      "required": ["agent"],
+      "properties": {
+        "agent": {
+          "type": "object",
+          "required": ["name", "version"],
+          "properties": {
+            "name": { "type": "string" },
+            "version": { "type": "string" },
+            "developer": { "type": "string", "description": "开发方（组织名或 DID）。" },
+            "deployer": { "type": "string", "description": "部署方（若与开发方不同）。" },
+            "registry_id": {
+              "type": "string",
+              "description": "智能体注册平台登记号。对应《实施意见》§4 智能体注册平台；未登记时省略。"
+            },
+            "identity_credential": {
+              "type": "string",
+              "description": "可验证凭证引用（W3C Agent Identity Registry 方向），如 did:web:...。MAY。"
+            }
+          }
+        },
+        "accountable_human": {
+          "type": "object",
+          "description": "责任主体。EU AI Act 意义上的 provider/deployer 对应人。",
+          "properties": {
+            "name": { "type": "string" },
+            "role": { "type": "string" },
+            "contact": { "type": "string" }
+          }
+        }
+      }
+    },
+    "authorization": {
+      "type": "object",
+      "required": ["decision_model", "capabilities"],
+      "properties": {
+        "decision_model": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "决策方式边界声明（静态声明全量类别，逐能力细粒度覆盖见 capabilities[].decision_class）。对应《实施意见》§6 三分法。",
+          "items": { "$ref": "#/$defs/decisionClass" }
+        },
+        "capabilities": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["domain", "grant"],
+            "properties": {
+              "domain": { "$ref": "#/$defs/capabilityDomain" },
+              "grant": {
+                "enum": ["none", "read", "write", "execute", "full"],
+                "description": "none=明示禁止；用于生成'负面清单'。"
+              },
+              "scope": {
+                "type": "object",
+                "description": "域内限定。MUST 为受限键值（见各域约定：network.hosts / filesystem.paths / payment.ceiling 等）。",
+                "additionalProperties": true
+              },
+              "constraints": {
+                "type": "array",
+                "description": "机器可校验约束表达式，语言由 expression_lang 声明（cedar/cel/agentspec）。执法层应能加载同源表达式。",
+                "items": { "type": "string" }
+              },
+              "expression_lang": {
+                "enum": ["cedar", "cel", "agentspec", "text"],
+                "default": "text"
+              },
+              "decision_class": { "$ref": "#/$defs/decisionClass" },
+              "requires_user_approval": {
+                "type": "boolean",
+                "default": false,
+                "description": "true=该能力每次/每类触发前需升级人工确认（对应行为事件 outcome=escalated-to-user）。"
+              },
+              "note": {
+                "type": "object",
+                "properties": { "zh-CN": { "type": "string" }, "en": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "data_flow": {
+          "type": "array",
+          "description": "数据流声明（对应 §8 数据安全/个保）。OUTBOUND 未声明的目的地 = 违规。",
+          "items": {
+            "type": "object",
+            "required": ["category", "direction"],
+            "properties": {
+              "category": {
+                "enum": ["personal", "student-record", "teaching-content", "payment", "telemetry", "credential", "other"]
+              },
+              "direction": { "enum": ["inbound", "outbound"] },
+              "counterparty": { "type": "string", "description": "对端标识（host / org / service）。" },
+              "lawful_basis": { "type": "string", "description": "合法性基础（个保法/GDPR 依据条目）。MAY。" }
+            }
+          }
+        },
+        "autonomy_limits": {
+          "type": "object",
+          "description": "自主性总量约束（防失控）。MAY，但执法层 SHOULD 能消费。",
+          "properties": {
+            "max_actions_per_run": { "type": "integer", "minimum": 1 },
+            "max_spend_per_run": { "type": "number", "minimum": 0 },
+            "currency": { "type": "string" },
+            "max_duration_minutes": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "policy_source": {
+      "type": "array",
+      "description": "执法层策略源（Cedar/OPA/AgentSpec 文件的引用+摘要）。Producer MUST 提供或声明为何缺失（仅观测型部署）。",
+      "items": {
+        "type": "object",
+        "required": ["engine", "digest"],
+        "properties": {
+          "engine": { "enum": ["cedar", "dogwood", "opa", "agentspec", "custom", "none-observational"] },
+          "uri": { "type": "string" },
+          "digest": { "type": "string", "description": "sha256:...。" }
+        }
+      }
+    },
+    "signature": { "$ref": "#/$defs/signature" }
+  },
+  "$defs": {
+    "decisionClass": {
+      "enum": ["user-exclusive", "user-authorized", "agent-autonomous"],
+      "description": "user-exclusive=仅用户本人可决策；user-authorized=需用户授权（可预授权范围）；agent-autonomous=授权范围内自主。"
+    },
+    "capabilityDomain": {
+      "enum": [
+        "network", "filesystem", "process", "shell", "code-execution",
+        "model-access", "tool-use", "data-collection", "payment",
+        "communication", "identity", "physical-actuator"
+      ],
+      "description": "能力域。事件流的 action.domain MUST 使用同一枚举，保证声明与证据可对齐。"
+    },
+    "signature": {
+      "type": "object",
+      "description": "签署信封。0.1 允许 algorithm=none（未签）；1.0 起公开互认场景 MUST 签署（Sigstore/x509）。",
+      "required": ["algorithm"],
+      "properties": {
+        "algorithm": { "enum": ["none", "ed25519", "ecdsa-p256", "sigstore-bundle"] },
+        "signed_digest": { "type": "string" },
+        "public_key": { "type": "string" },
+        "signed_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

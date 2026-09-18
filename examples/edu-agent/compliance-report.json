@@ -1,0 +1,80 @@
+{
+  "acef_version": "0.1",
+  "report_id": "rpt_edupilot_20260918w",
+  "generated_at": "2026-09-18T18:00:00+08:00",
+  "period": { "from": "2026-09-11T00:00:00+08:00", "to": "2026-09-18T00:00:00+08:00" },
+  "profile_ref": {
+    "profile_id": "ap_edupilot_2.3.1_20260901",
+    "profile_digest": "sha256:9f1c0a7d2b3e4f5a6789012345678901234567890abcdef1234567890abcdef12"
+  },
+  "summary": {
+    "zh-CN": "监测期内 EduPilot 教学助手共执行 7 次动作：5 次正常放行（含 1 次经教师确认后读取学生名单），2 次被行为围栏拦截——一次试图读取导出目录外的个人财务文件，一次疑似遭受提示注入后试图向未备案收款方发起支付（智能体声明中无任何支付能力）。无声明外行为实际执行，事件链哈希校验通过，证据完整。数据仅外发至已声明的校方管理后台（教学统计），无个人数据出境。",
+    "en": "During the monitoring period, the EduPilot agent performed 7 actions: 5 allowed (including one student-roster fetch explicitly approved by the teacher), 2 blocked by the behavior fence — an attempt to read a personal finance file outside the declared export folder, and a payment attempt to an unregistered payee induced by a suspected prompt injection (the agent holds no payment capability by declaration). No undeclared action was executed; the event hash chain verified. Data egress was limited to the declared school admin endpoint; no personal data left the declared scope."
+  },
+  "conformance": {
+    "event_counts": {
+      "total": 7,
+      "allowed": 5,
+      "blocked": 2,
+      "escalated": 1,
+      "violations": 0,
+      "integrity_verified": true
+    },
+    "violations": [],
+    "fence_effectiveness": 1.0
+  },
+  "regulatory_mapping": [
+    {
+      "regulation": "CN-Agent-Opinion-2026",
+      "provision": "§6",
+      "status": "conformant",
+      "statement": {
+        "zh-CN": "所有实际执行的操作均在授权范围内；两起越界尝试均被拦截，未发生超出用户授权范围的执行。",
+        "en": "All executed actions stayed within the authorized scope; both out-of-scope attempts were blocked."
+      },
+      "evidence_refs": ["evt_20260918T01000004", "evt_20260918T01000005", "violations:[]"]
+    },
+    {
+      "regulation": "CN-Agent-Opinion-2026",
+      "provision": "§7",
+      "status": "conformant",
+      "statement": {
+        "zh-CN": "行为全程留痕，事件流哈希链校验通过，行为可验证、可追溯。",
+        "en": "All behavior is logged with a verified hash chain (verifiable and traceable)."
+      },
+      "evidence_refs": ["conformance.event_counts.integrity_verified"]
+    },
+    {
+      "regulation": "CN-Agent-Opinion-2026",
+      "provision": "§11",
+      "status": "conformant",
+      "statement": {
+        "zh-CN": "本报告即低风险领域'合规自测'的机器可读产物，可直接提交信息报告。",
+        "en": "This report is the machine-readable artifact of the self-assessment for low-risk domains."
+      },
+      "evidence_refs": ["report_id"]
+    },
+    {
+      "regulation": "EU-AI-Act-2024",
+      "provision": "Art.72",
+      "status": "partial",
+      "statement": {
+        "zh-CN": "已具备部署后持续监测与严重事件证据；事件向监管通报的流程对接待 0.2 版信封规范。",
+        "en": "Post-market monitoring evidence is present; regulator notification envelope lands in v0.2."
+      },
+      "evidence_refs": ["violations:[]"]
+    },
+    {
+      "regulation": "NIST-AI-RMF-1.0",
+      "provision": "MEASURE-1.2",
+      "status": "conformant",
+      "statement": { "zh-CN": "安全行为已按可度量事件记录并周期评估。", "en": "Security behavior is recorded as measurable events and periodically evaluated." },
+      "evidence_refs": ["conformance.event_counts"]
+    }
+  ],
+  "verifier": {
+    "tool": "acef-refimpl",
+    "version": "0.1.0",
+    "signature": { "algorithm": "none" }
+  }
+}
