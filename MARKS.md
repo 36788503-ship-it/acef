@@ -1,6 +1,8 @@
 # ACEF 商标与名称使用政策 / Trademark & Marks Policy
 
-"ACEF"、"Agent Compliance Evidence Format" 及未来的 logo 是本项目的名称资产（**拟申请商标注册**）。
+"ACEF"、"Agent Compliance Evidence Format" 及未来的 logo 是本项目的名称资产。
+
+**商标权利人/申请人**：宁波市传喜网络科技有限公司（Ningbo Chuanxi Network Technology Co., Ltd.），第 9/42 类注册申请中。
 
 ## 允许的使用（无需书面许可）
 

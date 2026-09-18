@@ -81,7 +81,7 @@ py -m jsonschema --instance examples/edu-agent/authorization-profile.json spec/a
 
 ## 7. 许可、版权与商标
 
-- **版权**：Copyright (c) 2026 The ACEF Authors。代码与文档按 **Apache-2.0** 授权（允许商业与闭源衍生，附 NOTICE 与 MARKS.md 约束）
+- **版权**：Copyright (c) 2026 Ningbo Chuanxi Network Technology Co., Ltd.。代码与文档按 **Apache-2.0** 授权（允许商业与闭源衍生，附 NOTICE 与 MARKS.md 约束）
 - **贡献**：见 [CONTRIBUTING.md](CONTRIBUTING.md)——入站=出站（Apache-2.0）+ DCO 签署
 - **商标**："ACEF" 名称受 [MARKS.md](MARKS.md) 使用政策约束（项目拟注册商标）。代码开放 ≠ 名称开放
 

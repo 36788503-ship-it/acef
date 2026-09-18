@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:acef:spec:0.1:authorization-profile",
-  "$comment": "SPDX-License-Identifier: Apache-2.0 | Copyright (c) 2026 The ACEF Authors | See NOTICE and MARKS.md",
+  "$comment": "SPDX-License-Identifier: Apache-2.0 | Copyright (c) 2026 Ningbo Chuanxi Network Technology Co., Ltd. | See NOTICE and MARKS.md",
   "title": "ACEF Authorization Profile",
   "description": "授权声明：智能体被允许做什么。部署前声明并签署，运行期不得超出。对应中国《智能体实施意见》§6「智能体执行操作不得超出用户授权范围」。",
   "type": "object",
